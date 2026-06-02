@@ -1,0 +1,49 @@
+/* Custom Global Variables & Smooth Overrides */
+:root {
+  --primary-green: #2e7d32;
+  --primary-blue: #0288d1;
+  --warning-orange: #ff9100;
+  --danger-red: #d32f2f;
+  --bg-dark: #1e1e24;
+  --text-main: #2c3e50;
+  --border-light: #e2e8f0;
+}
+
+body {
+  margin: 0;
+  background-color: #f8fafc;
+  color: var(--text-main);
+  /* This gives a fallback path for Windows, Mac, Linux, and Android */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom interactive animation classes */
+.btn-animate {
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-animate:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  filter: brightness(1.08);
+}
+
+.btn-animate:active {
+  transform: translateY(1px);
+}
+
+.card-item {
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.card-item:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #94a3b8 !important;
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15);
+}
