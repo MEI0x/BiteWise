@@ -39,13 +39,13 @@ Ensure you have PostgreSQL installed and running locally, then initialize a data
 2. Environment Variables
 Create a hidden .env file inside your /server directory and configure your credentials:
 
-PORT=5000
-DB_USER=your_postgres_user
-DB_PASSWORD=your_pgadmin_password
-DB_HOST=localhost
-DB_PORT=5432
-DB_DATABASE=bitewise
-JWT_SECRET=your_generated_cryptographic_secret_key
+PORT=5000  
+DB_USER=your_postgres_user  
+DB_PASSWORD=your_pgadmin_password  
+DB_HOST=localhost  
+DB_PORT=5432  
+DB_DATABASE=bitewise  
+JWT_SECRET=your_generated_cryptographic_secret_key  
 
 
 3. Run the Backend
