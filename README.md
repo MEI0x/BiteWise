@@ -1,12 +1,10 @@
- BiteWise: Full-Stack Smart Grocery Registry
+# BiteWise: Full-Stack Smart Grocery Registry
 
 BiteWise is a responsive, production-ready full-stack web application designed to streamline pantry management and grocery tracking. Built using the robust **PERN stack** (PostgreSQL, Express, React, Node.js), it features secure user authentication and an automated autocomplete search algorithm capable of instantly navigating large product registries.
 
 
 
-Key Features
-
-## 🚀 Key Features
+## Key Features
 
 * **Full CRUD Operations:** Seamlessly **C**reate, **R**ead, **U**pdate, and **D**elete items within your personal grocery and pantry lists, with real-time state synchronization.
 * **Smart Search Registry:** Instantly filter and scroll through a database of 200+ predefined grocery items with a maximized fluid dropdown UI layout.
@@ -15,15 +13,14 @@ Key Features
 * **Polished Component Design:** Built with a clean, scannable, component-driven user interface utilizing React and custom responsive CSS.
 
 
-The Architecture (PERN Stack)
+## The Architecture (PERN Stack)
 
 This application is engineered using four primary technologies:
 
-PostgreSQL: Handles relational data storage, securing user profiles, predefined catalogs, and dynamic shopping items.
-Express.js: Manages backend REST API routing, query execution parameters, and request-response cycles.
-React.js: Renders the modular, high-speed component tree, managing state transitions and UI elements.
-Node.js: Serves as the high-performance asynchronous JavaScript runtime environment handling backend operations.
-
+* **PostgreSQL:** Handles relational data storage, securing user profiles, predefined catalogs, and dynamic shopping items.
+* **Express.js:** Manages backend REST API routing, query execution parameters, and request-response cycles.
+* **React.js:** Renders the modular, high-speed component tree, managing state transitions and UI elements.
+* **Node.js:** Serves as the high-performance asynchronous JavaScript runtime environment handling backend operations.
 
 
 Project Structure
@@ -34,8 +31,7 @@ BiteWise/
 
 
 
-
-Local Setup and Configuration
+## Local Setup and Configuration
 1. Database Setup
 Ensure you have PostgreSQL installed and running locally, then initialize a database named bitewise.
 
