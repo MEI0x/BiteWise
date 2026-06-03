@@ -25,7 +25,7 @@ This application is engineered using four primary technologies:
 
 Project Structure
 
-BiteWise/
+BiteWise/  
 ├── client/          # React frontend, custom UI components, and styles  
 └── server/          # Node.js/Express API, database pools, and JWT middleware  
 
