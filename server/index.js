@@ -54,55 +54,101 @@ const authenticateToken = (req, res, next) => {
 // ==========================================
 
 // USER REGISTRATION
+// ⚡ ONE SINGLE, PERFECTLY MERGED REGISTRATION ROUTE
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
 
-        const userCheck = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (userCheck.rows.length > 0) {
-            return res.status(400).json({ message: "User with this email already exists" });
+        // 1. Verify all fields exist in the incoming request payload
+        if (!email || !password || !username) {
+            return res.status(400).json({ error: "All fields are required." });
         }
 
+        // 2. Strict Structural Email Validation Regex Pattern
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: "Please enter a valid email address (e.g., user@domain.com)." });
+        }
+
+        // 3. Enforce password rules (Frontend rules matched: Capital, Number, Symbol, Min 8 chars)
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            return res.status(400).json({ 
+                error: "Password must be at least 8 characters long, contain an uppercase letter, a number, and a special character." 
+            });
+        }
+
+        // 4. Schema Duplication Guard: Query PostgreSQL pool to see if email is claimed
+        const userCheck = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (userCheck.rows.length > 0) {
+            return res.status(400).json({ error: "User with this email already exists" });
+        }
+
+        // 5. Securely Hash Password
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+        // 6. Run the SQL Insertion into your PostgreSQL database schema
         const newUser = await pool.query(
             'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email',
             [username, email, hashedPassword]
         );
 
-        const token = jwt.sign({ userId: newUser.rows[0].id }, JWT_SECRET, { expiresIn: '24h' });
+        // 7. Sign and Dispatch Security Token using your Env key string
+        const token = jwt.sign({ userId: newUser.rows[0].id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+        
+        // 8. Return data payload cleanly back to front-end handler
         res.json({ token, user: newUser.rows[0] });
+
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error during registration');
+        console.error("Backend Registration Failure Log:", err.message);
+        res.status(500).json({ error: "Server error during registration process." });
     }
-});
+}); // 💡 This is now the ONLY closing bracket at the absolute end of the logic tree!
+
+
+
 
 // USER LOGIN
 app.post('/api/auth/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        // 1. Accept an identifier (which can be either a username or an email)
+        const { identifier, password } = req.body;
 
-        const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (userResult.rows.length === 0) {
-            return res.status(400).json({ message: "Invalid email or password" });
+        if (!identifier || !password) {
+            return res.status(400).json({ error: "All login fields are required." });
         }
 
-        const user = userResult.rows[0];
+        // 2. Expanded SQL check: Match against the email column OR the username column
+        const userCheck = await pool.query(
+            'SELECT * FROM users WHERE email = $1 OR username = $1', 
+            [identifier.trim()]
+        );
+
+        // 3. Guard clause if no user account matches
+        if (userCheck.rows.length === 0) {
+            return res.status(400).json({ error: "Invalid credentials. Account not found." });
+        }
+
+        const user = userCheck.rows[0];
+
+        // 4. Verify hashed password match matrix
         const isMatch = await bcrypt.compare(password, user.password_hash);
         if (!isMatch) {
-            return res.status(400).json({ message: "Invalid email or password" });
+            return res.status(400).json({ error: "Invalid credentials. Incorrect password." });
         }
 
+        // 5. Generate validation token
         const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+
         res.json({ 
             token, 
             user: { id: user.id, username: user.username, email: user.email } 
         });
+
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error during login');
+        console.error("Login route error:", err.message);
+        res.status(500).json({ error: "Server error during authentication." });
     }
 });
 
@@ -322,6 +368,26 @@ app.put('/api/pantry/:id/quantity', authenticateToken, async (req, res) => {
     }
 });
 
+app.delete("/auth/delete-account", authenticateToken, async (req, res) => {
+    try {
+      // Extracts the user ID that your authenticateToken middleware attached to req.user
+      const userId = req.user.id; 
+  
+      const deleteUser = await pool.query(
+        "DELETE FROM users WHERE id = $1 RETURNING username",
+        [userId]
+      );
+  
+      if (deleteUser.rows.length === 0) {
+        return res.status(404).json({ error: "User profile not found." });
+      }
+  
+      res.json({ message: `Account for ${deleteUser.rows[0].username} successfully removed.` });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).json({ error: "Database error during account deletion." });
+    }
+  });
 app.listen(PORT, () => {
     console.log(`Server has started on port ${PORT}`);
 });
