@@ -6,7 +6,8 @@ import express from 'express';
 import cors from 'cors';       
 import jwt from 'jsonwebtoken'; 
 import bcrypt from 'bcrypt';
-import pool from './db.js';
+import { pool } from './db.js'; 
+
 
 
 
