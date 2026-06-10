@@ -2,11 +2,192 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import './index.css';
-// 1. Import it at the top of App.jsx or Dashboard.jsx
-import AccountSettings from './components/AccountSettings';
 import { ITEM_EMOJIS, PREDEFINED_ITEMS, GROCERY_CATALOG } from './utils/constants';
 import { styles } from './styles';
 
+
+// Place this at the top of src/App.jsx
+const TRANSLATIONS = {
+  en: {
+    pantryTab: "📦 Inventory Pantry",
+    groceryTab: "📝 Grocery List",
+    profileTab: "👤 Profile & Settings",
+    accountCreated: "Account Created On",
+    securityStatus: "Current Security Status",
+    activeSession: "Active Storage Session",
+    modifyUsername: "Modify Username",
+    modifyEmail: "Modify Email Address",
+    applyChanges: "Apply Account Changes",
+    dangerZone: "⚠️ Danger Zone",
+    dangerText: "Deleting your account will purge all database entries including active grocery deficit lists and pantry inventory logs.",
+    deleteBtn: "Permanently Delete BiteWise Account",
+    emptyFields: "Credentials cannot be left empty.",
+    updateSuccess: "Profile Updated!",
+    updateFailed: "Update Failed",
+    mainTitle: "Intelligent Kitchen & Grocery Coordination",
+    user: "👤 User:",
+    signOut: "Sign Out",
+    totalInventory: "📦 Total Inventory",
+    expiredItems: "🚨 Expired Items", 
+    useWithinThreeDays: "⏳ Use Within 3 Days",
+    deficitShoppingItems: "🛒 Deficit Shopping Items",
+    selectItem: "Select or Search Item",
+    quantity: "Quantity",
+    unit: "Unit",
+    grams: "Grams",
+    kilograms: "Kilograms",
+    liters: "Liters",
+    pieces: "Pieces",
+    packs: "Packs",
+    expirationDate: "Expiration Date",
+    addToStock: "Add to Stock",
+    currentStockBalance: "Current Stock Balance",
+    searchPantryItems: "🔍 Search pantry items...",
+    allStockCondition: "All Stock Condition",
+    expired: "🔴 Expired",
+    urgent: "⏳ Urgent",
+    filterGroup: "Filter Group:",
+    allCategories: "All Categories",
+    produce: "🍌 Produce",
+    meat: "🥩 Meat & Deli",
+    dairy: "🧀 Dairy", 
+    staples: "🥫 Staples",
+    beverages: "☕ Beverages",
+    household: "🧻 Household",
+    delete: "Delete",
+    depleted: "🔄 Depleted / Restock",
+    nameNotOnList: "➕ Name not on list? Create Custom Item...",
+    typeToSearch: "🔍 Type to search food list...",
+    exp: "📅 Exp: ",
+    appendDeficitItem: "➕ Append Deficit Item",
+    activeProcurementItems: "Active Procurement Items",
+    itemRequirement: "Item Requirement... (e.g. Whole Milk)",
+    addToList: "Add to List",
+    establishANew: "Establish a new planning account",
+    username: "Username",
+    password: "Password",
+    enterYourSecurePassword: "Enter your secure password",
+    showPassword: "Show Password",
+    registerAccount: "Register Account",
+    existingUser: "Existing user?",
+    signBackIn: "Sign back in",
+    newClient: "New client?",
+    createAnAccount: "Create an account",
+    authenticateLogin: "Authenticate Login",
+    usernameOrEmail: "Enter Username or Email Address",
+    email: "Enter Valid Email Address",
+    noMatchingInventory: "No matching inventory entries discovered.",
+    pleaseFillOut: "Please fill out all basic credentials.", 
+    pleaseEnterAValid: "Please enter a valid email structure.",
+    enterCustom: "Enter Custom Item Name",
+    signInMessage: "Sign in to access your kitchen storage",
+    passwordError: "Password must be at least 8 characters long, contain an uppercase letter, a number, and a special character.",
+    deleteYourEntire: "Delete Your Entire Account?",
+    typeDeleteBelow: "Type 'DELETE' below to permanently destroy your profile.",
+    yesPermanently: "Yes, permanently delete",
+    cancel: "Cancel",
+    youMustType: "You must type 'DELETE' to confirm",
+    profileErased: "Profile Erased",
+    stockedInto: "Stocked into pantry",
+    areYouSure: "Are you sure?",
+    thisItemWillBe: "This item will be permanently removed from your kitchen inventory!",
+    expired: "🚨 EXPIRED",
+    expiresToday: "⚠️ EXPIRES TODAY",
+
+
+
+    
+
+
+  },
+  tr: {
+    pantryTab: "📦 Kiler Envanteri",
+    groceryTab: "📝 Alışveriş Listesi",
+    profileTab: "👤 Profil ve Ayarlar",
+    accountCreated: "Hesap Oluşturma Tarihi",
+    securityStatus: "Mevcut Güvenlik Durumu",
+    activeSession: "Aktif Depolama Oturumu",
+    modifyUsername: "Kullanıcı Adını Değiştir",
+    modifyEmail: "E-posta Adresini Değiştir",
+    applyChanges: "Hesap Değişikliklerini Uygula",
+    dangerZone: "⚠️ Tehlikeli Bölge",
+    dangerText: "Hesabınızı silmek, aktif alışveriş listeleri ve kiler envanter kayıtları dahil olmak üzere tüm veri tabanı kayıtlarını kalıcı olarak temizler.",
+    deleteBtn: "BiteWise Hesabını Kalıcı Olarak Sil",
+    emptyFields: "Alanlar boş bırakılamaz.",
+    updateSuccess: "Profil Güncellendi!",
+    updateFailed: "Güncelleme Başarısız",
+    mainTitle: "Akıllı Mutfak & Market Koordinasyonu",
+    user: "👤 Kullanıcı:",
+    signOut: "Çıkış Yap",
+    totalInventory: "📦 Toplam Ürün",
+    expiredItems: "🚨 Tarİhİ Geçmİş Ürünler", 
+    useWithinThreeDays: "⏳ 3 Gün İçİnde Tüketİn",
+    deficitShoppingItems: "🛒 Eksİk Ürünler",
+    selectItem: "Ürün Seçiniz veya Arayınız",
+    quantity: "Miktar",
+    unit: "Birim",
+    grams: "Gram",
+    kilograms: "Kilogram",
+    liters: "Litre",
+    pieces: "Adet",
+    packs: "Paket",
+    expirationDate: "Son Kullanma Tarihi",
+    addToStock: "Stoğa Ekleyin",
+    currentStockBalance: "Mevcut Stok Durumu",
+    searchPantryItems: "🔍 Mutfak ürünleri ara",
+    allStockCondition: "Tüm Stok Durumu",
+    expired: "🔴 Tarihi Geçmiş",
+    urgent: "⏳ Acil Olarak Tüketilmesi Gereken",
+    filterGroup: "Filtre:",
+    allCategories: "Tüm Kategoriler",
+    produce: "🍌 Sebze-Mevye",
+    meat: "🥩 Et Ürünleri",
+    dairy: "🧀 Mandıra", 
+    staples: "🥫 Temel Gıdalar",
+    beverages: "☕ İçecekler",
+    household: "🧻 Ev Gereçleri",
+    delete: "Sil",
+    depleted: "🔄 Tükendi / Stok Bitti",
+    nameNotOnList: "➕ İsim listede yok mu? Yeni ürün oluşturun...",
+    typeToSearch: "🔍 Ürün listesinde arayın...",
+    exp: "📅 STT: ",
+    appendDeficitItem: "Gerekli Olan Ürünü Ekleyin",
+    activeProcurementItems: "Aktif Tedarik Ürünleri",
+    itemRequirement: "Ürün Ekleyin",
+    addToList: "Listeye Ekle",
+    establishANew: "Yeni bir hesap oluşturun",
+    username: "Kullanıcı adı",
+    password: "Şifre",
+    enterYourSecurePassword: "Şifrenizi girin",
+    showPassword: "Şifreyi göster",
+    registerAccount: "Kayıt ol",
+    existingUser: "Zaten hesabınız var mı?",
+    signBackIn: "Tekrar giriş yap",
+    newClient: "Yeni kullanıcı?",
+    createAnAccount: "Hesap oluştur",
+    authenticateLogin: "Giriş yap",
+    usernameOrEmail: "Kullanıcı adı veya Email adresi girin",
+    email: "Kullanıcı adı veya E-posta adresi girin",
+    noMatchingInventory: "Eşleşen ürün bulunamadı.",
+    pleaseFillOut: "Lütfen bütün boşlukları doldurun.", 
+    pleaseEnterAValid: "Lütfen geçerli bir e-posta adresi girin",
+    enterCustom: "Listede olmayan ürün ismi giriniz",
+    signInMessage: "Hesabınıza erişmek için giriş yapınız",
+    passwordError: "Şifreniz en az 8 karakter uzunluğunda olmalı, büyük harf, rakam ve özel karakter içermelidir.",
+    deleteYourEntire: "Hesabınızı kalıcı olarak silinecek?",
+    typeDeleteBelow: "Hesabınızı silmek için aşağıya DELETE yazın",
+    yesPermanently: "Evet, kalıcı olarak sil",
+    cancel: "İptal",
+    youMustType: "Kabul etmek için DELETE yazmalısınız",
+    profileErased: "Hesap silinmiştir",
+    stockedInto: "Ürün Stoğa Eklendi",
+    areYouSure: "Emin misin?",
+    thisItemWillBe: "Bu ürün mutfak envanterinden kalıcı olarak silinecek",
+    expired: "🚨 TARİHİ GEÇMİŞ",
+    expiresToday: "⚠️ BUGÜN SON KULLANMA TARİHİ",
+    
+  }
+};
 
 
 function App() {
@@ -45,6 +226,21 @@ function App() {
   const [isCustomItem, setIsCustomItem] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
+
+  
+  const [newUsername, setNewUsername] = useState(user?.username || '');
+  const [newEmail, setNewEmail] = useState(user?.email || '');
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+
+  const [activeTab, setActiveTab] = useState('pantry'); // or 'grocery'
+
+
+  const [lang, setLang] = useState(localStorage.getItem('biteWiseLang') || 'en');
+
+
+  const t = TRANSLATIONS[lang];
+
+
 
   // Trigger content loading automatically when the token changes/exists
   useEffect(() => {
@@ -102,6 +298,9 @@ function App() {
     return { color: '#64748b', badge: null, isExpired: false };
   };
 
+  
+
+
   // --- AUTH HANDLERS ---
   const handleAuthSubmit = async (e) => {
     e.preventDefault();
@@ -109,7 +308,7 @@ function App() {
   
     // 1. Check if fields are empty first
     if (!authEmail.trim() || !authPassword.trim()) {
-      return setAuthError("Please fill out all basic credentials.");
+      return setAuthError(t.pleaseFillOut);
     }
   
     // 2. Validate email structure
@@ -117,7 +316,7 @@ function App() {
     if (authMode === 'register') {
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(authEmail)) {
-      return setAuthError("Please enter a valid email structure.");
+      return setAuthError(t.pleaseEnterAValid);
     }
   }
     
@@ -128,7 +327,7 @@ function App() {
   
       if (!passwordRegex.test(authPassword)) {
         return setAuthError(
-          "Password must be at least 8 characters long, contain an uppercase letter, a number, and a special character."
+          t.passwordError
         );
       }
     }
@@ -209,7 +408,6 @@ function App() {
     }
   };
 
-  // --- SECURED PANTRY CRUD HANDLERS ---
   const handlePantrySubmit = async (e) => {
     e.preventDefault();
     let finalName = pantryName;
@@ -217,7 +415,7 @@ function App() {
     // If they picked the custom input flag option, prompt them for the unique name
     if (pantryName === "custom_input") {
       const { value: customName } = await Swal.fire({
-        title: 'Enter Custom Item Name',
+        title: t.enterCustom,
         input: 'text',
         inputPlaceholder: 'e.g., Avocados, Hot Sauce...',
         showCancelButton: true
@@ -234,8 +432,19 @@ function App() {
       return Swal.fire({ icon: 'warning', title: 'Missing Name', text: 'Please choose or type an item name.' });
     }
 
-    // Run our existing smart fuzzy metadata matching engine automatically!
+    // 1. Run your existing smart fuzzy metadata matching engine automatically!
     const metaData = autoDetectCategory(finalName);
+
+    // 2. SAFE EXTRACTION: Resolve localized category structures down to strings
+    // If metaData returns an object { en, tr }, extract the active language string.
+    // If it's already a string or missing, fall back gracefully.
+    const resolvedCategory = metaData?.cat && typeof metaData.cat === 'object' 
+      ? (metaData.cat[lang] || metaData.cat['en']) 
+      : (metaData?.cat || "Other");
+
+    const resolvedSubCategory = metaData?.sub && typeof metaData.sub === 'object' 
+      ? (metaData.sub[lang] || metaData.sub['en']) 
+      : (metaData?.sub || "Other");
 
     try {
       const newItem = { 
@@ -243,8 +452,8 @@ function App() {
         quantity: parseFloat(pantryQuantity), 
         unit: pantryUnit, 
         expiration_date: pantryExpiry || null,
-        category: metaData.cat,
-        subcategory: metaData.sub
+        category: resolvedCategory,      // Now safely passes a Flat String (e.g., "Süt Ürünleri & Dolap")
+        subcategory: resolvedSubCategory // Now safely passes a Flat String (e.g., "Süt ve Krema")
       };
       
       const response = await axios.post('http://localhost:5000/api/pantry', newItem, getAuthConfig());
@@ -255,19 +464,24 @@ function App() {
       setPantryQuantity('1'); 
       setPantryExpiry('');
     } catch (error) {
-      console.error(error);
+      console.error("Backend Error adding item to pantry:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Submission Failed',
+        text: 'Could not add item. Check if backend fields match the required formats.'
+      });
     }
-  };
+};
 
   const handlePantryDelete = async (id) => {
     const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "This item will be permanently removed from your kitchen inventory!",
+      title: t.areYouSure,
+      text: t.thisItemWillBe,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#b91c1c',
       cancelButtonColor: '#94a3b8',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonText: t.yesPermanently
     });
 
     if (!result.isConfirmed) return;
@@ -292,21 +506,36 @@ function App() {
     }
   };
 
-  // --- SECURED SHOPPING CRUD HANDLERS ---
   const handleShoppingSubmit = async (e) => {
     e.preventDefault();
-    if (!pantryName.trim()) {
-      return Swal.fire({ icon: 'warning', title: 'Missing Name', text: 'Please enter a valid item name before adding.', confirmButtonColor: '#2e7d32' });
+    
+    // 💡 FIXED: Check shopName instead of pantryName
+    if (!shopName || !shopName.trim()) {
+      return Swal.fire({ 
+        icon: 'warning', 
+        title: 'Missing Name', 
+        text: 'Please enter a valid item name before adding.', 
+        confirmButtonColor: '#2e7d32' 
+      });
     }
+    
     try {
-      const newItem = { name: shopName, quantity: parseFloat(shopQuantity), unit: shopUnit };
+      const newItem = { 
+        name: shopName.trim(), // Clean up any trailing spaces
+        quantity: parseFloat(shopQuantity), 
+        unit: shopUnit 
+      };
+      
       const response = await axios.post('http://localhost:5000/api/shopping', newItem, getAuthConfig());
       setShoppingItems([response.data, ...shoppingItems]);
-      setShopName(''); setShopQuantity('1');
+      
+      // Reset form fields
+      setShopName(''); 
+      setShopQuantity('1');
     } catch (error) {
-      console.error(error);
+      console.error("Error adding item to shopping list:", error);
     }
-  };
+};
 
   const handleTogglePurchased = async (id, currentStatus) => {
     let actualQuantity = undefined;
@@ -373,7 +602,7 @@ function App() {
       setShoppingItems(shoppingItems.map(item => item.id === id ? response.data : item));
       
       if (!currentStatus) {
-        Swal.fire({ icon: 'success', title: 'Stocked into pantry!', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+        Swal.fire({ icon: 'success', title: t.stockedInto, toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
       }
       fetchPantry(); 
     } catch (error) {
@@ -390,41 +619,238 @@ function App() {
     }
   };
 
-  const handleUpdateQuantity = async (id, newQuantity) => {
-    // If the field is entirely blanked out while editing, fallback to 0 safely
+  const handleUpdateQuantity = async (id, newQuantity, extraData = {}) => {
     const parsedQty = newQuantity === '' ? 0 : parseFloat(newQuantity);
     if (isNaN(parsedQty) || parsedQty < 0) return;
 
     try {
+      const payload = { quantity: parsedQty };
+      if (extraData.expiration_date !== undefined) {
+        payload.expiration_date = extraData.expiration_date || null;
+      }
+
       const response = await axios.put(
         `http://localhost:5000/api/pantry/${id}/quantity`, 
-        { quantity: parsedQty }, 
+        payload, 
         getAuthConfig()
       );
       
-      // Force convert response data parameters to raw numbers to keep React state aligned
       const updatedData = {
         ...response.data,
         quantity: Number(response.data.quantity)
       };
 
-      // Synchronize state array
       setPantryItems(pantryItems.map(item => item.id === id ? updatedData : item));
+
+      if (extraData.isRestock) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Restocked!',
+          text: 'Item details updated successfully.',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
     } catch (error) {
-      console.error("Failed to execute inline inventory balance adjustment:", error);
+      console.error("Failed to execute inventory balance adjustment:", error);
     }
   };
+
+
+  // --- DYNAMIC AUTH VIEWS WITH INTEGRATED LANGUAGE SWITCHER ---
+
+  // --- DYNAMIC AUTH VIEWS WITH FIXED FLOW LANGUAGE SWITCHER ---
+
+  const LoginScreen = () => {
+    return (
+      <div className="auth-page-wrapper" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '20px' }}>
+        
+        {/* 🌐 Clean In-Flow Language Switcher Bar */}
+        <div className="auth-lang-header" style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+          <button 
+            onClick={() => setLang('en')} 
+            className={`lang-btn ${lang === 'en' ? 'active' : ''}`}
+            style={{ 
+              fontWeight: lang === 'en' ? 'bold' : 'normal', 
+              padding: '8px 16px', 
+              cursor: 'pointer', 
+              borderRadius: '4px',
+              border: lang === 'en' ? '2px solid #000' : '1px solid #ccc',
+              backgroundColor: '#fff'
+            }}
+          >
+            🇬🇧 EN
+          </button>
+          <button 
+            onClick={() => setLang('tr')} 
+            className={`lang-btn ${lang === 'tr' ? 'active' : ''}`}
+            style={{ 
+              fontWeight: lang === 'tr' ? 'bold' : 'normal', 
+              padding: '8px 16px', 
+              cursor: 'pointer', 
+              borderRadius: '4px',
+              border: lang === 'tr' ? '2px solid #000' : '1px solid #ccc',
+              backgroundColor: '#fff'
+            }}
+          >
+            🇹🇷 TR
+          </button>
+        </div>
+  
+        <div className="login-card" style={{ width: '100%', maxWidth: '400px' }}>
+          <h2>{lang === 'tr' ? 'Giriş Yap' : 'Login'}</h2>
+          
+          <form onSubmit={handleAuthSubmit}>
+            <label style={{ display: 'block', marginTop: '10px' }}>{lang === 'tr' ? 'E-posta' : 'Email'}</label>
+            <input 
+              type="email" 
+              placeholder="example@email.com" 
+              value={authEmail} 
+              onChange={(e) => setAuthEmail(e.target.value)} 
+              style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+            />
+            
+            <label style={{ display: 'block', marginTop: '10px' }}>{lang === 'tr' ? 'Şifre' : 'Password'}</label>
+            <input 
+              type="password" 
+              placeholder="••••••••" 
+              value={authPassword} 
+              onChange={(e) => setAuthPassword(e.target.value)} 
+              style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+            />
+            
+            <button type="submit" style={{ marginTop: '20px', width: '100%', padding: '10px', cursor: 'pointer' }}>
+              {lang === 'tr' ? 'Giriş' : 'Sign In'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
+  const RegisterScreen = () => {
+    return (
+      <div className="auth-page-wrapper" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '20px' }}>
+        
+        {/* 🌐 Clean In-Flow Language Switcher Bar */}
+        <div className="auth-lang-header" style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
+          <button 
+            onClick={() => setLang('en')} 
+            className={`lang-btn ${lang === 'en' ? 'active' : ''}`}
+            style={{ 
+              fontWeight: lang === 'en' ? 'bold' : 'normal', 
+              padding: '8px 16px', 
+              cursor: 'pointer', 
+              borderRadius: '4px',
+              border: lang === 'en' ? '2px solid #000' : '1px solid #ccc',
+              backgroundColor: '#fff'
+            }}
+          >
+            🇬🇧 EN
+          </button>
+          <button 
+            onClick={() => setLang('tr')} 
+            className={`lang-btn ${lang === 'tr' ? 'active' : ''}`}
+            style={{ 
+              fontWeight: lang === 'tr' ? 'bold' : 'normal', 
+              padding: '8px 16px', 
+              cursor: 'pointer', 
+              borderRadius: '4px',
+              border: lang === 'tr' ? '2px solid #000' : '1px solid #ccc',
+              backgroundColor: '#fff'
+            }}
+          >
+            🇹🇷 TR
+          </button>
+        </div>
+  
+        <div className="register-card" style={{ width: '100%', maxWidth: '400px' }}>
+          <h2>{lang === 'tr' ? 'Hesap Oluştur' : 'Create Account'}</h2>
+          
+          <form onSubmit={handleAuthSubmit}>
+            <label style={{ display: 'block', marginTop: '10px' }}>{lang === 'tr' ? 'Ad Soyad' : 'Full Name'}</label>
+            <input 
+              type="text" 
+              placeholder="John Doe" 
+              value={authUsername} 
+              onChange={(e) => setAuthUsername(e.target.value)} 
+              style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+            />
+  
+            <label style={{ display: 'block', marginTop: '10px' }}>{lang === 'tr' ? 'E-posta' : 'Email'}</label>
+            <input 
+              type="email" 
+              placeholder="example@email.com" 
+              value={authEmail} 
+              onChange={(e) => setAuthEmail(e.target.value)} 
+              style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+            />
+            
+            <label style={{ display: 'block', marginTop: '10px' }}>{lang === 'tr' ? 'Şifre' : 'Password'}</label>
+            <input 
+              type="password" 
+              placeholder="••••••••" 
+              value={authPassword} 
+              onChange={(e) => setAuthPassword(e.target.value)} 
+              style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+            />
+            
+            <button type="submit" style={{ marginTop: '20px', width: '100%', padding: '10px', cursor: 'pointer' }}>
+              {lang === 'tr' ? 'Kayıt Ol' : 'Register'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
+
 
   // ==========================================
   // RENDER PATTERN A: GATEKEEPER LOGIN PANEL
   // ==========================================
   if (!token) {
     return (
-      <div style={styles.authWrapper}>
+      <div style={{ ...styles.authWrapper, flexDirection: 'column', gap: '20px' }}>
+        
+        {/* 🌐 GLOBAL AUTH LANGUAGE TOGGLE BAR */}
+        <div style={{ display: 'flex', gap: '10px', background: '#fff', padding: '6px 12px', borderRadius: '20px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
+          <button 
+            onClick={() => setLang('en')} 
+            style={{ 
+              fontWeight: lang === 'en' ? 'bold' : 'normal', 
+              padding: '6px 14px', 
+              cursor: 'pointer', 
+              borderRadius: '15px',
+              border: 'none',
+              backgroundColor: lang === 'en' ? '#f1f5f9' : 'transparent',
+              color: lang === 'en' ? '#0f172a' : '#64748b',
+              transition: 'all 0.2s'
+            }}
+          >
+            🇬🇧 EN
+          </button>
+          <button 
+            onClick={() => setLang('tr')} 
+            style={{ 
+              fontWeight: lang === 'tr' ? 'bold' : 'normal', 
+              padding: '6px 14px', 
+              cursor: 'pointer', 
+              borderRadius: '15px',
+              border: 'none',
+              backgroundColor: lang === 'tr' ? '#f1f5f9' : 'transparent',
+              color: lang === 'tr' ? '#0f172a' : '#64748b',
+              transition: 'all 0.2s'
+            }}
+          >
+            🇹🇷 TR
+          </button>
+        </div>
+
         <div style={styles.authCard}>
           <h2 style={{ textAlign: 'center', margin: '0 0 8px 0', fontSize: '1.8em' }}>🍏 BiteWise</h2>
           <p style={{ textAlign: 'center', color: '#64748b', margin: '0 0 24px 0' }}>
-            {authMode === 'login' ? 'Sign in to access your kitchen storage' : 'Establish a new planning account'}
+            {authMode === 'login' ? (t.signInMessage || 'Sign in to access your kitchen storage') : (t.signUpMessage || t.establishANew)}
           </p>
 
           {authError && <div style={styles.errorAlert}>⚠️ {authError}</div>}
@@ -432,53 +858,53 @@ function App() {
           <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {authMode === 'register' && (
               <input 
-                type="text" placeholder="Username" value={authUsername}
+                type="text" placeholder={t.username} value={authUsername}
                 onChange={(e) => setAuthUsername(e.target.value)} style={styles.inputField}
               />
             )}
             <input 
-  type="text"                  
-  placeholder="Username or Email Address" 
-  value={authEmail}            
-  onChange={(e) => setAuthEmail(e.target.value)} 
-  style={styles.inputField}
-/>
+              type="text"                  
+              placeholder={t.email}
+              value={authEmail}            
+              onChange={(e) => setAuthEmail(e.target.value)} 
+              style={styles.inputField}
+            />
             <div style={{ position: 'relative', marginBottom: '15px' }}>
-  <label style={styles.inputLabel}>Password</label>
-  <input
-    type={showPassword ? "text" : "password"} 
-    placeholder="Enter your secure password"
-    value={authPassword}
-    onChange={(e) => setAuthPassword(e.target.value)}
-    style={styles.formInput}
-    required
-  />
-  
-  {/* 👁️ The Toggle Checkbox/Link */}
-  <div style={{ display: 'flex', alignItems: 'center', marginTop: '6px', gap: '6px' }}>
-    <input 
-      type="checkbox" 
-      id="togglePassword"
-      checked={showPassword} 
-      onChange={() => setShowPassword(!showPassword)} 
-      style={{ cursor: 'pointer' }}
-    />
-    <label htmlFor="togglePassword" style={{ fontSize: '0.85em', color: '#64748b', cursor: 'pointer', userSelect: 'none' }}>
-      Show Password
-    </label>
-  </div>
-</div>
+              <label style={styles.inputLabel}>{t.password}</label>
+              <input
+                type={showPassword ? "text" : "password"} 
+                placeholder={t.enterYourSecurePassword}
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                style={styles.formInput}
+                required
+              />
+              
+              {/* 👁️ The Toggle Checkbox/Link */}
+              <div style={{ display: 'flex', alignItems: 'center', marginTop: '6px', gap: '6px' }}>
+                <input 
+                  type="checkbox" 
+                  id="togglePassword"
+                  checked={showPassword} 
+                  onChange={() => setShowPassword(!showPassword)} 
+                  style={{ cursor: 'pointer' }}
+                />
+                <label htmlFor="togglePassword" style={{ fontSize: '0.85em', color: '#64748b', cursor: 'pointer', userSelect: 'none' }}>
+                  {t.showPassword}
+                </label>
+              </div>
+            </div>
             
             <button type="submit" className="btn-animate" style={styles.authSubmitBtn}>
-              {authMode === 'login' ? 'Authenticate Login' : 'Register Account'}
+              {authMode === 'login' ? t.authenticateLogin : t.registerAccount}
             </button>
           </form>
 
           <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.9em' }}>
             {authMode === 'login' ? (
-              <p style={{ margin: 0 }}>New client? <span onClick={() => { setAuthMode('register'); setAuthError(''); }} style={styles.switchLink}>Create an account</span></p>
+              <p style={{ margin: 0 }}>{t.newClient} <span onClick={() => { setAuthMode('register'); setAuthError(''); }} style={styles.switchLink}>{t.createAnAccount}</span></p>
             ) : (
-              <p style={{ margin: 0 }}>Existing user? <span onClick={() => { setAuthMode('login'); setAuthError(''); }} style={styles.switchLink}>Sign back in</span></p>
+              <p style={{ margin: 0 }}>{t.existingUser} <span onClick={() => { setAuthMode('login'); setAuthError(''); }} style={styles.switchLink}>{t.signBackIn}</span></p>
             )}
           </div>
         </div>
@@ -513,7 +939,7 @@ function App() {
     const status = getExpiryStatus(item.expiration_date);
     let matchesExpiry = true;
     if (pantryFilter === 'expired') {
-      matchesExpiry = (status.badge === '🚨 EXPIRED' || status.badge === '⚠️ EXPIRES TODAY');
+      matchesExpiry = (status.badge === t.expired || status.badge === t.expiresToday);
     } else if (pantryFilter === 'soon') {
       matchesExpiry = (status.badge && status.badge.includes('⏳'));
     }
@@ -541,11 +967,11 @@ function App() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h1 style={styles.brandTitle}>🍏 BiteWise</h1>
-            <p style={styles.brandSubtitle}>Intelligent Kitchen & Grocery Coordination</p>
+            <p style={styles.brandSubtitle}>{t.mainTitle}</p>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <span style={styles.userGreeting}>👤 User: <strong>{user?.username}</strong></span>
-            <button onClick={handleLogout} className="btn-animate" style={styles.logoutBtn}>Sign Out</button>
+            <span style={styles.userGreeting}>{t.user} <strong>{user?.username}</strong></span>
+            <button onClick={handleLogout} className="btn-animate" style={styles.logoutBtn}>{t.signOut}</button>
           </div>
         </div>
       </header>
@@ -561,7 +987,7 @@ function App() {
             border: currentTab === 'pantry' ? 'none' : '1px solid #e2e8f0',
           }}
         >
-          📦 Inventory Pantry
+          {t.pantryTab}
         </button>
         <button 
           onClick={() => setCurrentTab('shopping')} className="btn-animate"
@@ -572,16 +998,52 @@ function App() {
             border: currentTab === 'shopping' ? 'none' : '1px solid #e2e8f0',
           }}
         >
-          📝 Grocery List
+          {t.groceryTab}
         </button>
-      </div>
-  
+        <button 
+          onClick={() => setCurrentTab('profile')} className="btn-animate"
+          style={{
+            ...styles.tabButton,
+            backgroundColor: currentTab === 'profile' ? '#a80324' : '#ffffff',
+            color: currentTab === 'profile' ? '#ffffff' : '#64748b',
+            border: currentTab === 'profile' ? 'none' : '1px solid #e2e8f0',
+          }}  
+  >
+          {t.profileTab}
+      </button>
+    </div>
+    <button
+    onClick={() => {
+      const nextLang = lang === 'en' ? 'tr' : 'en';
+      setLang(nextLang);
+      localStorage.setItem('biteWiseLang', nextLang);
+    }}
+    style={{
+      padding: '8px 16px',
+      backgroundColor: '#f1f5f9',
+      border: '1px solid #cbd5e1',
+      borderRadius: '20px',
+      fontWeight: '600',
+      color: '#334155',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      transition: 'all 0.2s'
+    }}
+    onMouseOver={(e) => e.target.style.backgroundColor = '#e2e8f0'}
+    onMouseOut={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+  >
+    {lang === 'en' ? '🇹🇷 Türkçe\'ye Geç' : '🇬🇧 Switch to English'}
+  </button>
+
+
       <hr style={{ border: 'none', borderBottom: '1px solid #e2e8f0', marginBottom: '30px' }} />
   
       {/* EXECUTIVE DASHBOARD ANALYTICS BANNER */}
       <div style={styles.dashboardGrid}>
         <div style={{ ...styles.statCard, borderTop: '4px solid #475569' }}>
-          <div style={styles.statLabel}>📦 Total Inventory</div>
+          <div style={styles.statLabel}>{t.totalInventory}</div>
           <div style={styles.statValue}>{totalPantryItems}</div>
         </div>
         
@@ -590,7 +1052,7 @@ function App() {
           borderTop: '4px solid #ef4444',
           backgroundColor: expiredCount > 0 ? '#fef2f2' : '#ffffff' 
         }}>
-          <div style={{ ...styles.statLabel, color: expiredCount > 0 ? '#991b1b' : '#475569' }}>🚨 Expired Items</div>
+          <div style={{ ...styles.statLabel, color: expiredCount > 0 ? '#991b1b' : '#475569' }}>{t.expiredItems}</div>
           <div style={{ ...styles.statValue, color: expiredCount > 0 ? '#b91c1c' : '#0f172a' }}>{expiredCount}</div>
         </div>
   
@@ -599,12 +1061,12 @@ function App() {
           borderTop: '4px solid #f97316',
           backgroundColor: expiringSoonCount > 0 ? '#fff7ed' : '#ffffff'
         }}>
-          <div style={{ ...styles.statLabel, color: expiringSoonCount > 0 ? '#9a3412' : '#475569' }}>⏳ Use Within 3 Days</div>
+          <div style={{ ...styles.statLabel, color: expiringSoonCount > 0 ? '#9a3412' : '#475569' }}>{t.useWithinThreeDays}</div>
           <div style={{ ...styles.statValue, color: expiringSoonCount > 0 ? '#c2410c' : '#0f172a' }}>{expiringSoonCount}</div>
         </div>
   
         <div style={{ ...styles.statCard, borderTop: '4px solid #0288d1' }}>
-          <div style={styles.statLabel}>🛒 Deficit Shopping Items</div>
+          <div style={styles.statLabel}>{t.deficitShoppingItems}</div>
           <div style={styles.statValue}>{remainingShoppingItems}</div>
         </div>
       </div>    
@@ -619,10 +1081,10 @@ function App() {
           >
             {/* 1. AUTOCOMPLETE SEARCHABLE PRODUCT SELECTOR */}
             <div style={{ flex: '2', minWidth: '220px', position: 'relative' }}>
-              <label style={styles.inputLabel}>Select or Search Item</label>
+              <label style={styles.inputLabel}>{t.selectItem}</label>
               <input
                 type="text"
-                placeholder="🔍 Type to search food list..."
+                placeholder={t.typeToSearch}
                 value={isCustomItem ? pantryName : dropdownSearch}
                 disabled={isCustomItem}
                 onFocus={() => { if (!isCustomItem) setShowSuggestions(true); }}
@@ -651,7 +1113,7 @@ function App() {
                       setIsCustomItem(true);
                       setShowSuggestions(false);
                       Swal.fire({
-                        title: 'Enter Custom Item Name',
+                        title: t.enterCustom,
                         input: 'text',
                         inputPlaceholder: 'e.g., Turkish Delight, Hot Sauce...',
                         showCancelButton: true
@@ -665,44 +1127,61 @@ function App() {
                     }}
                     style={{ ...styles.suggestionRowItem, color: '#0288d1', fontWeight: '600', borderBottom: '2px solid #e2e8f0' }}
                   >
-                    ➕ Name not on list? Create Custom Item...
-                  </div>
-  
-                  {PREDEFINED_ITEMS.filter(prod => 
-                    prod.name.toLowerCase().includes(dropdownSearch.toLowerCase())
-                  ).map((prod) => (
-                    <div
-                      key={prod.name}
-                      onClick={() => {
-                        setPantryName(prod.name);
-                        setDropdownSearch(prod.name);
-                        setShowSuggestions(false);
-  
-                        const lowerName = prod.name.toLowerCase();
-                        if (['milk', 'juice', 'broth', 'water', 'vinegar', 'oil', 'cream', 'seltzer'].some(k => lowerName.includes(k))) {
-                          setPantryUnit('Liters');
-                        } else if (['egg', 'bread', 'waffles', 'bars', 'pizza', 'burritos', 'bags', 'pods'].some(k => lowerName.includes(k))) {
-                          setPantryUnit('Pieces');
-                        } else {
-                          setPantryUnit('Kilograms');
-                        }
-                      }}
-                      style={styles.suggestionRowItem}
-                    >
-                      {prod.label}
+                    {t.nameNotOnList}
                     </div>
-                  ))}
   
-                  {PREDEFINED_ITEMS.filter(prod => prod.name.toLowerCase().includes(dropdownSearch.toLowerCase())).length === 0 && (
-                    <div style={{ padding: '10px', color: '#64748b', fontSize: '0.85em', textAlign: 'center' }}>No matches. Click the custom option at the top!</div>
-                  )}
-                </div>
-              )}
-            </div>
+  {/* 1. LOCALIZED FILTERING AND MAPPING */}
+  {PREDEFINED_ITEMS.filter(prod => {
+    // Pull the correct language name string dynamically
+    const currentItemName = typeof prod.name === 'object' ? prod.name[lang] : prod.name;
+    return currentItemName.toLowerCase().includes(dropdownSearch.toLowerCase());
+  }).map((prod, idx) => {
+    // Pull localized string values safely
+    const localizedName = typeof prod.name === 'object' ? prod.name[lang] : prod.name;
+    const localizedLabel = typeof prod.label === 'object' ? prod.label[lang] : prod.label;
+
+    return (
+      <div
+        key={idx} // Uses your new index key tracker
+        onClick={() => {
+          setPantryName(localizedName); // Uses localized standard value
+          setDropdownSearch(localizedName);
+          setShowSuggestions(false);
+
+          // 2. KEEP YOUR SMART UNIT PRESET LOGIC WORKING
+          const lowerName = localizedName.toLowerCase();
+          if (['milk', 'juice', 'broth', 'water', 'vinegar', 'oil', 'cream', 'seltzer', 'litre', 'litre'].some(k => lowerName.includes(k))) {
+            setPantryUnit('Liters');
+          } else if (['egg', 'bread', 'waffles', 'bars', 'pizza', 'burritos', 'bags', 'pods', 'adet'].some(k => lowerName.includes(k))) {
+            setPantryUnit('Pieces');
+          } else {
+            setPantryUnit('Kilograms');
+          }
+        }}
+        style={styles.suggestionRowItem}
+        className="autocomplete-item" // Adds your new class reference
+      >
+        {localizedLabel} {/* Displays the localized emoji + label text */}
+      </div>
+    );
+  })}
+
+  {/* 3. UPDATED NO MATCHES NO NOTIFICATION PANEL */}
+  {PREDEFINED_ITEMS.filter(prod => {
+    const currentItemName = typeof prod.name === 'object' ? prod.name[lang] : prod.name;
+    return currentItemName.toLowerCase().includes(dropdownSearch.toLowerCase());
+  }).length === 0 && (
+    <div style={{ padding: '10px', color: '#64748b', fontSize: '0.85em', textAlign: 'center' }}>
+      {lang === 'tr' ? 'Eşleşen ürün bulunamadı. Yukarıdaki özel seçeneğe tıklayın!' : 'No matches. Click the custom option at the top!'}
+    </div>
+  )}
+</div>
+)}
+</div>
   
             {/* 2. QUANTITY INPUT FIELD */}
             <div style={{ flex: '1', minWidth: '100px' }}>
-              <label style={styles.inputLabel}>Quantity</label>
+              <label style={styles.inputLabel}>{t.quantity}</label>
               <input 
                 type="number" 
                 step="any"
@@ -716,22 +1195,22 @@ function App() {
   
             {/* 3. UNIT SELECTOR DROPDOWN */}
             <div style={{ flex: '1', minWidth: '110px' }}>
-              <label style={styles.inputLabel}>Unit</label>
+              <label style={styles.inputLabel}>{t.unit}</label>
               <select
                 value={pantryUnit}
                 onChange={(e) => setPantryUnit(e.target.value)}
                 style={styles.formSelectInput}
               >
-                <option value="Kilograms">Kilograms</option>
-                <option value="Liters">Liters</option>
-                <option value="Pieces">Pieces</option>
-                <option value="Packs">Packs</option>
+                <option value="Kilograms">{t.kilograms}</option>
+                <option value="Liters">{t.liters}</option>
+                <option value="Pieces">{t.pieces}</option>
+                <option value="Packs">{t.packs}</option>
               </select>
             </div>
   
             {/* 4. EXPIRATION DATE PICKER */}
             <div style={{ flex: '1.5', minWidth: '150px' }}>
-              <label style={styles.inputLabel}>Expiration Date</label>
+              <label style={styles.inputLabel}>{t.expirationDate}</label>
               <input 
                 type="date"
                 value={pantryExpiry}
@@ -743,19 +1222,23 @@ function App() {
             {/* 5. SUBMIT BUTTON */}
             <div style={{ flex: '1', minWidth: '120px' }}>
               <button type="submit" style={styles.addItemSubmitBtn}>
-                Add to Stock
+                {t.addToStock}
               </button>
             </div>
           </form>
   
-          <h3>Current Stock Balance</h3>
-  
+          <h3>{t.currentStockBalance}</h3>
+
+
+
+
+
           {/* GLOBAL SEARCH & CATEGORY CONTROLS */}
           <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '24px' }}>
             <div style={{ marginBottom: '12px' }}>
               <input 
                 type="text" 
-                placeholder="🔍 Search pantry items..." 
+                placeholder={t.searchPantryItems} 
                 value={pantrySearch}
                 onChange={(e) => setPantrySearch(e.target.value)}
                 style={styles.searchBar}
@@ -763,21 +1246,21 @@ function App() {
             </div>
   
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
-              <button onClick={() => setPantryFilter('all')} style={{ ...styles.filterTabBtn, backgroundColor: pantryFilter === 'all' ? '#e2e8f0' : '#ffffff', border: '1px solid #cbd5e1' }}>All Stock Condition</button>
-              <button onClick={() => setPantryFilter('expired')} style={{ ...styles.filterTabBtn, backgroundColor: pantryFilter === 'expired' ? '#fef2f2' : '#ffffff', color: '#b91c1c', border: pantryFilter === 'expired' ? '1px solid #ef4444' : '1px solid #cbd5e1' }}>🔴 Expired ({expiredCount})</button>
-              <button onClick={() => setPantryFilter('soon')} style={{ ...styles.filterTabBtn, backgroundColor: pantryFilter === 'soon' ? '#fff7ed' : '#ffffff', color: '#c2410c', border: pantryFilter === 'soon' ? '1px solid #f97316' : '1px solid #cbd5e1' }}>⏳ Urgent ({expiringSoonCount})</button>
+              <button onClick={() => setPantryFilter('all')} style={{ ...styles.filterTabBtn, backgroundColor: pantryFilter === 'all' ? '#e2e8f0' : '#ffffff', border: '1px solid #cbd5e1' }}>{t.allStockCondition}</button>
+              <button onClick={() => setPantryFilter('expired')} style={{ ...styles.filterTabBtn, backgroundColor: pantryFilter === 'expired' ? '#fef2f2' : '#ffffff', color: '#b91c1c', border: pantryFilter === 'expired' ? '1px solid #ef4444' : '1px solid #cbd5e1' }}>{t.expired} ({expiredCount})</button>
+              <button onClick={() => setPantryFilter('soon')} style={{ ...styles.filterTabBtn, backgroundColor: pantryFilter === 'soon' ? '#fff7ed' : '#ffffff', color: '#c2410c', border: pantryFilter === 'soon' ? '1px solid #f97316' : '1px solid #cbd5e1' }}>{t.urgent} ({expiringSoonCount})</button>
             </div>
   
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', borderTop: '1px solid #e2e8f0', paddingTop: '12px' }}>
-              <span style={{ fontSize: '0.8em', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginRight: '6px' }}>Filter Group:</span>
+              <span style={{ fontSize: '0.8em', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginRight: '6px' }}>{t.filterGroup}</span>
               {[
-                { label: 'All Categories', value: 'all' },
-                { label: '🍌 Produce', value: 'Fresh Produce' },
-                { label: '🥩 Meat & Deli', value: 'Meat' },
-                { label: '🧀 Dairy', value: 'Dairy' },
-                { label: '🥫 Staples', value: 'Center Store' },
-                { label: '☕ Beverages', value: 'Beverages' },
-                { label: '🧻 Household', value: 'Household' }
+                { label: t.allCategories, value: 'all' },
+                { label: t.produce, value: 'Fresh Produce' },
+                { label: t.meat, value: 'Meat' },
+                { label: t.dairy, value: 'Dairy' },
+                { label: t.staples, value: 'Center Store' },
+                { label: t.beverages, value: 'Beverages' },
+                { label: t.household, value: 'Household' }
               ].map((pill) => (
                 <button
                   key={pill.value}
@@ -798,7 +1281,7 @@ function App() {
           {pantryLoading ? (
             <p style={styles.infoText}>Querying inventory schema...</p>
           ) : filteredPantryItems.length === 0 ? (
-            <p style={styles.infoText}>No matching inventory entries discovered.</p>
+            <p style={styles.infoText}>{t.noMatchingInventory}</p>
           ) : (
             <div style={styles.listContainer}>
               {filteredPantryItems.map((item) => {
@@ -827,7 +1310,7 @@ function App() {
                       </span>
                       {item.expiration_date && (
                         <span style={{ ...styles.expiryTag, color: status.color, fontWeight: status.badge ? '600' : '400' }}>
-                          📅 Exp: {new Date(item.expiration_date).toLocaleDateString()}
+                          {t.exp} {new Date(item.expiration_date).toLocaleDateString('en-GB')}
                           {status.badge && (
                             <span style={{ marginLeft: '8px', padding: '2px 6px', backgroundColor: '#f1f5f9', borderRadius: '4px', fontSize: '0.85em' }}>
                               {status.badge}
@@ -839,10 +1322,10 @@ function App() {
                     
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button onClick={() => handleMoveToList(item.id)} className="btn-animate" style={styles.actionBtnWarning}>
-                        🔄 Depleted / Restock
+                        {t.depleted}
                       </button>
                       <button onClick={() => handlePantryDelete(item.id)} className="btn-animate" style={styles.actionBtnDanger}>
-                        Delete
+                        {t.delete}
                       </button>
                     </div>
                   </div>
@@ -857,10 +1340,10 @@ function App() {
       {currentTab === 'shopping' && (
         <div>
           <div style={styles.formCardBlue}>
-            <h4 style={{ margin: '0 0 12px 0', color: '#0a3044' }}>➕ Append Deficit Item</h4>
+            <h4 style={{ margin: '0 0 12px 0', color: '#0a3044' }}>{t.appendDeficitItem}</h4>
             <form onSubmit={handleShoppingSubmit} style={styles.formLayout}>
               <input 
-                type="text" placeholder="Item Requirement... (e.g. Whole Milk)" value={shopName}
+                type="text" placeholder={t.itemRequirement} value={shopName}
                 onChange={(e) => setShopName(e.target.value)} style={styles.inputField}
               />
               <input 
@@ -868,17 +1351,17 @@ function App() {
                 onChange={(e) => setShopQuantity(e.target.value)} style={styles.inputQty}
               />
               <select value={shopUnit} onChange={(e) => setShopUnit(e.target.value)} style={styles.selectField}>
-                <option value="pieces">pieces</option>
-                <option value="Liters">Liters</option>
-                <option value="Grams">Grams</option>
-                <option value="Kilograms">Kilograms</option>
-                <option value="Packs">Packs</option>
+                <option value="pieces">{t.pieces}</option>
+                <option value="Liters">{t.liters}</option>
+                <option value="Grams">{t.grams}</option>
+                <option value="Kilograms">{t.kilograms}</option>
+                <option value="Packs">{t.packs}</option>
               </select>
-              <button type="submit" className="btn-animate" style={styles.submitBtnBlue}>Add to List</button>
+              <button type="submit" className="btn-animate" style={styles.submitBtnBlue}>{t.addToList}</button>
             </form>
           </div>
   
-          <h3 style={styles.sectionHeading}>Active Procurement Items</h3>
+          <h3 style={styles.sectionHeading}>{t.activeProcurementItems}</h3>
           {shoppingLoading ? (
             <p style={styles.infoText}>Loading purchase registries...</p>
           ) : shoppingItems.length === 0 ? (
@@ -905,29 +1388,186 @@ function App() {
                       textDecoration: item.is_purchased ? 'line-through' : 'none',
                       color: item.is_purchased ? '#94a3b8' : '#1e293b'
                     }}>
-                      {item.name} <span style={{ fontWeight: '400', fontSize: '0.9em', color: '#64748b' }}>({item.quantity} {item.unit})</span>
-                    </span>
-                  </div>
-                  <button onClick={() => handleShoppingDelete(item.id)} style={styles.inlineRemoveBtn}>
-                    ❌
-                  </button>
+                    {item.name} <span style={{ fontWeight: '400', fontSize: '0.9em', color: '#64748b' }}>({item.quantity} {item.unit})</span>
+                  </span>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-  
-      {/* 🚨 ACCOUNT SETTINGS MODULE (Always accessible at the absolute bottom of the dashboard) */}
-      <hr style={{ border: 'none', borderBottom: '1px solid #e2e8f0', marginTop: '40px', marginBottom: '20px' }} />
-      <AccountSettings />
-  
+                <button onClick={() => handleShoppingDelete(item.id)} style={styles.inlineRemoveBtn}>
+                  ❌
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )}
+
+{currentTab === 'profile' && (
+  <div style={{
+    ...styles.pantryCard, // Matches your exact beautiful UI cards
+    padding: '24px',
+    backgroundColor: '#ffffff',
+    borderRadius: '8px',
+    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+  }}>
+    <h2 style={{ margin: '0 0 16px 0', color: '#1e293b' }}> {t.profileTab}</h2>
+    
+    {/* Account Information Card */}
+    <div style={{ backgroundColor: '#f8fafc', padding: '14px', borderRadius: '6px', marginBottom: '20px', border: '1px solid #e2e8f0' }}>
+      <div style={{ fontSize: '0.85em', color: '#64748b', fontWeight: '600' }}>{t.accountCreated}</div>
+      <div style={{ fontWeight: '500', color: '#334155', marginBottom: '10px' }}>
+        {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
+      </div>
+      
+      <div style={{ fontSize: '0.85em', color: '#64748b', fontWeight: '600' }}>{t.securityStatus}</div>
+      <div style={{ fontSize: '0.9em', color: '#10b981', fontWeight: '600' }}>{t.activeSession}</div>
     </div>
-  );
+
+    {/* Update Profile Form */}
+    <form onSubmit={async (e) => {
+      e.preventDefault();
+      if (!newUsername.trim() || !newEmail.trim()) {
+        return Swal.fire({ icon: 'warning', title: 'Empty Fields', text: 'Credentials cannot be left empty.' });
+      }
+      try {
+        setIsUpdatingProfile(true);
+        const response = await axios.put('http://localhost:5000/api/user/update', {
+          id: user?.id, // 👈 Explicitly passing the ID to find the record
+          username: newUsername,
+          email: newEmail
+        }, getAuthConfig());
+        
+        const updatedUser = { ...user, username: response.data.username, email: response.data.email };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+        
+        Swal.fire({ icon: 'success', title: t.updateSuccess, toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+      } catch (err) {
+        Swal.fire({ icon: 'error', title: t.updateFailed, text: err.response?.data?.error || 'Could not update profile details.' });
+      } finally {
+        setIsUpdatingProfile(false);
+      }
+    }} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      
+      <div>
+        <label style={{ ...styles.inputLabel, display: 'block', marginBottom: '4px', fontWeight: '600' }}>{t.modifyUsername}</label>
+        <input 
+          type="text" 
+          value={newUsername} 
+          onChange={(e) => setNewUsername(e.target.value)}
+          style={{ ...styles.formInput, width: '100%', boxSizing: 'border-box' }}
+        />
+      </div>
+
+      <div>
+        <label style={{ ...styles.inputLabel, display: 'block', marginBottom: '4px', fontWeight: '600' }}>{t.modifyEmail}</label>
+        <input 
+          type="email" 
+          value={newEmail} 
+          onChange={(e) => setNewEmail(e.target.value)}
+          style={{ ...styles.formInput, width: '100%', boxSizing: 'border-box' }}
+        />
+      </div>
+
+      <button 
+        type="submit" 
+        disabled={isUpdatingProfile}
+        style={{
+          padding: '10px 14px',
+          backgroundColor: '#475569',
+          color: '#ffffff',
+          border: 'none',
+          borderRadius: '6px',
+          fontWeight: '600',
+          cursor: 'pointer'
+        }}
+      >
+        {isUpdatingProfile ? 'Saving Details...' : t.applyChanges}
+      </button>
+    </form>
+
+    <hr style={{ border: 'none', borderBottom: '1px solid #e2e8f0', margin: '24px 0' }} />
+
+    {/* Danger Zone */}
+<div style={{ border: '1px solid #fee2e2', backgroundColor: '#fef2f2', padding: '16px', borderRadius: '6px' }}>
+  <h4 style={{ margin: '0 0 6px 0', color: '#991b1b', fontWeight: '700' }}>{t.dangerZone}</h4>
+  <p style={{ margin: '0 0 12px 0', fontSize: '0.85em', color: '#7f1d1d' }}>
+    {t.dangerText}
+  </p>
+  <button
+    type="button"
+    onClick={async () => {
+      const confirmResult = await Swal.fire({
+        title: t.deleteYourEntire,
+        text: t.typeDeleteBelow,
+        input: 'text',
+        inputPlaceholder: t.delete,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#b91c1c',
+        cancelButtonColor: '#94a3b8',
+        confirmButtonText: t.yesPermanently,
+        preConfirm: (val) => {
+          // 💡 FIXED: Explicitly return true if validation passes, otherwise show validation message
+          if (val === 'DELETE') {
+            return true; 
+          } else {
+            Swal.showValidationMessage(t.youMustType);
+            return false;
+          }
+        }
+      });
+
+      // Now this hook triggers properly because preConfirm returns true
+      // Inside your Danger Zone Swal confirmation block:
+if (confirmResult.isConfirmed) {
+  try {
+    // 💡 FIXED: Pointing to the exact route your backend is listening for
+    await axios.delete('http://localhost:5000/auth/delete-account', getAuthConfig());
+    
+    await Swal.fire({ 
+      icon: 'success', 
+      title: t.profileErased, 
+      showConfirmButton: false, 
+      timer: 1500 
+    });
+    
+    if (typeof handleLogout === 'function') {
+      handleLogout();
+    } else {
+      localStorage.clear();
+      window.location.reload();
+    }
+  } catch (err) {
+    console.error("Account erasure failed:", err);
+    Swal.fire({ 
+      icon: 'error', 
+      title: 'Error processing request', 
+      text: err.response?.data?.error || err.response?.data?.message || 'Server error.' 
+    });
+  }
 }
+    }}
+    style={{
+      width: '100%',
+      padding: '10px',
+      backgroundColor: '#ef4444',
+      color: '#ffffff',
+      border: 'none',
+      borderRadius: '6px',
+      fontWeight: '700',
+      cursor: 'pointer'
+    }}
+  >
+    {t.deleteBtn}
+  </button>
+</div>
+  </div>
+)}
 
 
-
+  </div> // <--- This cleanly closes your main view component container block!
+);
+}
 
 // 3. MULTI-LAYER FUZZY DETECTION LOGIC ENGINE
 const autoDetectCategory = (name) => {
@@ -957,9 +1597,5 @@ const autoDetectCategory = (name) => {
   // Final generic fallback if nothing matches
   return { icon: '📦', cat: '🥫 Center Store (Pantry Staples)', sub: 'Unassigned Items' };
 };
-
-
-
-
 
 export default App;

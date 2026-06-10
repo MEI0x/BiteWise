@@ -368,26 +368,102 @@ app.put('/api/pantry/:id/quantity', authenticateToken, async (req, res) => {
     }
 });
 
-app.delete("/auth/delete-account", authenticateToken, async (req, res) => {
-    try {
-      // Extracts the user ID that your authenticateToken middleware attached to req.user
-      const userId = req.user.id; 
+
+// 👤 Drop this into your main server file (e.g., server.js)
+app.put('/api/user/update', async (req, res) => {
+    const { username, email } = req.body;
+    
+    // Try to find a user ID passed from the frontend safely
+    // If your app stores user id in req.user, we check that too!
+    const userId = req.body.id || (req.user && req.user.id); 
   
-      const deleteUser = await pool.query(
+    if (!username || !email) {
+      return res.status(400).json({ error: 'Username and email field data are required.' });
+    }
+  
+    try {
+      // 💡 IMPORTANT: Change 'pool.query' or 'db.query' below to match 
+      // the exact name of your database variable at the top of your server file!
+      const queryText = `
+        UPDATE users 
+        SET username = $1, email = $2 
+        WHERE id = $3 
+        RETURNING id, username, email;
+      `;
+      
+      // Replace 'pool' with whatever your database client variable is named
+      const result = await pool.query(queryText, [username, email, userId]);
+  
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Target user record not found.' });
+      }
+  
+      res.json({
+        message: 'Profile updated successfully',
+        username: result.rows[0].username,
+        email: result.rows[0].email
+      });
+    } catch (err) {
+      console.error('Database error during profile update:', err);
+      if (err.code === '23505') { 
+        return res.status(400).json({ error: 'That username or email address is already taken.' });
+      }
+      res.status(500).json({ error: 'Internal server database update failure.' });
+    }
+  });
+
+  app.delete("/auth/delete-account", authenticateToken, async (req, res) => {
+    try {
+      // 1. Fallback extraction: check both common middleware placement keys
+      const userId = req.user?.id || req.user?.userId; 
+      
+      if (!userId) {
+        return res.status(401).json({ error: "Unauthorized: Missing user payload in token." });
+      }
+
+      console.log(`Executing safe purge for User ID: ${userId}`);
+  
+      // 2. Clear pantry dependencies safely
+      // 💡 CHANGE "pantry" BELOW IF YOUR TABLE IS NAMED DIFFERENTLY (e.g., "pantry_items")
+      try {
+        await pool.query("DELETE FROM pantry WHERE user_id = $1", [userId]);
+      } catch (pantryErr) {
+        console.error("Pantry deletion skip logic:", pantryErr.message);
+      }
+
+      // 3. Clear shopping dependencies safely
+      // 💡 CHANGE "shopping" BELOW IF YOUR TABLE IS NAMED DIFFERENTLY (e.g., "shopping_list")
+      try {
+        await pool.query("DELETE FROM shopping WHERE user_id = $1", [userId]);
+      } catch (shopErr) {
+        console.error("Shopping deletion skip logic:", shopErr.message);
+      }
+      
+      // 4. Delete the core user profile checking both potential primary keys ("id" vs "user_id")
+      let deleteUser = await pool.query(
         "DELETE FROM users WHERE id = $1 RETURNING username",
         [userId]
       );
+
+      // If matching on "id" failed, try matching on "user_id" column structure
+      if (deleteUser.rows.length === 0) {
+        console.log("Primary key 'id' column returned empty. Trying alternative 'user_id' column path...");
+        deleteUser = await pool.query(
+          "DELETE FROM users WHERE user_id = $1 RETURNING username",
+          [userId]
+        );
+      }
   
       if (deleteUser.rows.length === 0) {
-        return res.status(404).json({ error: "User profile not found." });
+        return res.status(404).json({ error: "User profile record not found in system storage." });
       }
   
       res.json({ message: `Account for ${deleteUser.rows[0].username} successfully removed.` });
     } catch (err) {
-      console.error(err.message);
-      res.status(500).json({ error: "Database error during account deletion." });
+      console.error("CRITICAL DELETE HANDLER CRASH:", err); 
+      res.status(500).json({ error: `Server space exception: ${err.message}` });
     }
-  });
+});
 app.listen(PORT, () => {
     console.log(`Server has started on port ${PORT}`);
 });
