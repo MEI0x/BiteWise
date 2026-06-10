@@ -487,6 +487,6 @@ app.put('/api/user/update', async (req, res) => {
       res.status(500).json({ error: `Server space exception: ${err.message}` });
     }
 });
-app.listen(PORT, () => {
-    console.log(`Server has started on port ${PORT}`);
-});
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running securely on port ${PORT}`);
+  });
