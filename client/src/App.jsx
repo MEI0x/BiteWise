@@ -5,6 +5,10 @@ import './index.css';
 import { ITEM_EMOJIS, PREDEFINED_ITEMS, GROCERY_CATALOG } from './utils/constants';
 import { styles } from './styles';
 
+// At the top of src/App.jsx
+const API_BASE_URL = 'https://bitewise-nxnc.onrender.com'; // Make sure this matches your exact Render URL!
+
+
 
 // Place this at the top of src/App.jsx
 const TRANSLATIONS = {
@@ -93,10 +97,6 @@ const TRANSLATIONS = {
     thisItemWillBe: "This item will be permanently removed from your kitchen inventory!",
     expired: "🚨 Expired",
     expiresToday: "⚠️ EXPIRES TODAY",
-
-
-
-    
 
 
   },
@@ -336,7 +336,7 @@ function App() {
     try {
       let response;
       if (authMode === 'login') {
-        response = await axios.post('http://localhost:5000/api/auth/login', {
+        response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
           identifier: authEmail,
           password: authPassword
         });
@@ -344,7 +344,7 @@ function App() {
         if (!authUsername.trim()) {
           return setAuthError("Username is required for registration.");
         }
-        response = await axios.post('http://localhost:5000/api/auth/register', {
+        response = await axios.post(`${API_BASE_URL}/api/auth/register`, {
           username: authUsername,
           email: authEmail,
           password: authPassword
@@ -387,7 +387,7 @@ function App() {
   const fetchPantry = async () => {
     try {
       setPantryLoading(true);
-      const response = await axios.get('http://localhost:5000/api/pantry', getAuthConfig());
+      const response = await axios.get(`${API_BASE_URL}/api/pantry`, getAuthConfig());
       setPantryItems(response.data);
       setPantryLoading(false);
     } catch (error) {
@@ -399,7 +399,7 @@ function App() {
   const fetchShopping = async () => {
     try {
       setShoppingLoading(true);
-      const response = await axios.get('http://localhost:5000/api/shopping', getAuthConfig());
+      const response = await axios.get(`${API_BASE_URL}/api/shopping`, getAuthConfig());
       setShoppingItems(response.data);
       setShoppingLoading(false);
     } catch (error) {
@@ -456,7 +456,7 @@ function App() {
         subcategory: resolvedSubCategory // Now safely passes a Flat String (e.g., "Süt ve Krema")
       };
       
-      const response = await axios.post('http://localhost:5000/api/pantry', newItem, getAuthConfig());
+      const response = await axios.post(`${API_BASE_URL}/api/pantry`, newItem, getAuthConfig());
       setPantryItems([...pantryItems, response.data]);
       
       // Clear values back to clean form defaults
@@ -487,7 +487,7 @@ function App() {
     if (!result.isConfirmed) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/pantry/${id}`, getAuthConfig());
+      await axios.delete(`${API_BASE_URL}/api/pantry/${id}`, getAuthConfig());
       setPantryItems(pantryItems.filter(item => item.id !== id));
       
       Swal.fire({ icon: 'success', title: 'Deleted!', text: 'Item has been purged.', timer: 1500, showConfirmButton: false });
@@ -498,7 +498,7 @@ function App() {
 
   const handleMoveToList = async (id) => {
     try {
-      const response = await axios.post(`http://localhost:5000/api/pantry/move-to-list/${id}`, {}, getAuthConfig());
+      const response = await axios.post(`${API_BASE_URL}/api/pantry/move-to-list/${id}`, {}, getAuthConfig());
       setPantryItems(pantryItems.filter(item => item.id !== id));
       setShoppingItems([response.data.shoppingItem, ...shoppingItems]);
     } catch (error) {
@@ -526,7 +526,7 @@ function App() {
         unit: shopUnit 
       };
       
-      const response = await axios.post('http://localhost:5000/api/shopping', newItem, getAuthConfig());
+      const response = await axios.post(`${API_BASE_URL}/api/shopping`, newItem, getAuthConfig());
       setShoppingItems([response.data, ...shoppingItems]);
       
       // Reset form fields
@@ -588,7 +588,7 @@ function App() {
       const metaData = autoDetectCategory(targetItem.name);
 
       const response = await axios.put(
-        `http://localhost:5000/api/shopping/${id}`, 
+        `${API_BASE_URL}/api/shopping/${id}`, 
         { 
           is_purchased: !currentStatus, 
           actual_quantity: actualQuantity,
@@ -612,7 +612,7 @@ function App() {
 
   const handleShoppingDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/shopping/${id}`, getAuthConfig());
+      await axios.delete(`${API_BASE_URL}/api/shopping/${id}`, getAuthConfig());
       setShoppingItems(shoppingItems.filter(item => item.id !== id));
     } catch (error) {
       console.error(error);
@@ -630,7 +630,7 @@ function App() {
       }
 
       const response = await axios.put(
-        `http://localhost:5000/api/pantry/${id}/quantity`, 
+        `${API_BASE_URL}/api/pantry/${id}/quantity`, 
         payload, 
         getAuthConfig()
       );
@@ -1449,7 +1449,7 @@ function App() {
       }
       try {
         setIsUpdatingProfile(true);
-        const response = await axios.put('http://localhost:5000/api/user/update', {
+        const response = await axios.put(`${API_BASE_URL}/api/user/update`, {
           id: user?.id, // 👈 Explicitly passing the ID to find the record
           username: newUsername,
           email: newEmail
@@ -1541,7 +1541,7 @@ function App() {
 if (confirmResult.isConfirmed) {
   try {
     // 💡 FIXED: Pointing to the exact route your backend is listening for
-    await axios.delete('http://localhost:5000/auth/delete-account', getAuthConfig());
+    await axios.delete(`${API_BASE_URL}/auth/delete-account`, getAuthConfig());
     
     await Swal.fire({ 
       icon: 'success', 
