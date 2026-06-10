@@ -1,0 +1,13 @@
+# Ignore dependency folders for both frontend and backend
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Ignore private environment files
+.env
+server/.env
+client/.env
+
+# Ignore build output folders
+dist/
+build/

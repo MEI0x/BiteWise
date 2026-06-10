@@ -1,13 +1,13 @@
+// db.js or server.js
 const { Pool } = require('pg');
-require('dotenv').config();
+require('dotenv').config(); // Make sure this package is installed: npm install dotenv
 
-// Create a pool instance to manage multiple simultaneous database connections
 const pool = new Pool({
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    database: process.env.DB_DATABASE,
+  // Use the database URL provided by the host environment, fallback to local if developer testing
+  connectionString: process.env.DATABASE_URL, 
+  ssl: process.env.NODE_ENV === 'production' 
+    ? { rejectUnauthorized: false } 
+    : false
 });
 
 module.exports = pool;

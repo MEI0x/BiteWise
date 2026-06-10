@@ -11,9 +11,32 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
-app.use(express.json()); // Allows our server to parse JSON bodies sent by the frontend
+import cors from 'cors'; // Cleaned up syntax to match your project's ES imports
+
+const allowedOrigins = [
+  'http://localhost:3000', // Local React development port
+  'http://localhost:5173'  // Local Vite development port
+];
+
+// If we are live, push your future Netlify URL into the whitelist array
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
+// 👇 THIS REPLACES YOUR OLD app.use(cors()) LINE COMPLETELY
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow server-to-server requests or matching web domains
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Blocked by CORS platform protection protocols'));
+    }
+  },
+  credentials: true
+}));
+
+app.use(express.json()); // Kept right below cors configuration
 
 // Test Route to verify server is running
 app.get('/test-server', (req, res) => {
