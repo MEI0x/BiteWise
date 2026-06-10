@@ -1,13 +1,16 @@
-// db.js or server.js
-const { Pool } = require('pg');
-require('dotenv').config(); // Make sure this package is installed: npm install dotenv
+import pkg from 'pg';
+import dotenv from 'dotenv';
 
+dotenv.config();
+const { Pool } = pkg;
+
+// Use the database URL provided by the host environment
 const pool = new Pool({
-  // Use the database URL provided by the host environment, fallback to local if developer testing
   connectionString: process.env.DATABASE_URL, 
   ssl: process.env.NODE_ENV === 'production' 
-    ? { rejectUnauthorized: false } 
+    ? { rejectUnauthorized: false } // Required for cloud databases like Supabase
     : false
 });
 
-module.exports = pool;
+// ⚡ THE CRITICAL LINE: Add this modern default export at the bottom!
+export default pool;
