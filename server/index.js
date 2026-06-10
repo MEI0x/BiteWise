@@ -6,6 +6,7 @@ import express from 'express';
 import cors from 'cors';       
 import jwt from 'jsonwebtoken'; 
 import bcrypt from 'bcrypt';
+import pool from './db';
 
 
 
@@ -13,10 +14,10 @@ import bcrypt from 'bcrypt';
 
 
 
-const express = require('express');
-const pool = require('./db'); // Import our DB connection
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+//const express = require('express');
+//const pool = require('./db'); // Import our DB connection
+//const bcrypt = require('bcrypt');
+//const jwt = require('jsonwebtoken');
 
 // A secret key used to sign our secure tokens. 
 //const JWT_SECRET = "bitewise_super_secret_key_123";
