@@ -1,4 +1,5 @@
-require('dotenv').config();
+import dotenv from 'dotenv'; 
+dotenv.config();          
 const express = require('express');
 
 const pool = require('./db'); // Import our DB connection
