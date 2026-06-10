@@ -1,7 +1,20 @@
 import dotenv from 'dotenv'; 
-dotenv.config();          
-const express = require('express');
+dotenv.config(); 
 
+
+import cors from 'cors';
+import express from 'express'; 
+import cors from 'cors';       
+import jwt from 'jsonwebtoken'; 
+import bcrypt from 'bcrypt';
+
+
+
+
+
+
+
+const express = require('express');
 const pool = require('./db'); // Import our DB connection
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -12,7 +25,6 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-import cors from 'cors'; // Cleaned up syntax to match your project's ES imports
 
 const allowedOrigins = [
   'http://localhost:3000', // Local React development port
