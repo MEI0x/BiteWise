@@ -91,7 +91,7 @@ const TRANSLATIONS = {
     stockedInto: "Stocked into pantry",
     areYouSure: "Are you sure?",
     thisItemWillBe: "This item will be permanently removed from your kitchen inventory!",
-    expired: "🚨 EXPIRED",
+    expired: "🚨 Expired",
     expiresToday: "⚠️ EXPIRES TODAY",
 
 
@@ -287,7 +287,7 @@ function App() {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) {
-      return { color: '#ef4444', badge: '🚨 EXPIRED', isExpired: true };
+      return { color: '#ef4444', badge: '🚨 Expired', isExpired: true };
     } else if (diffDays === 0) {
       return { color: '#df2020', badge: '⚠️ EXPIRES TODAY', isExpired: true };
     } else if (diffDays <= 3) {
@@ -919,7 +919,7 @@ function App() {
 
   const expiredCount = pantryItems.filter(item => {
     const status = getExpiryStatus(item.expiration_date);
-    return status.badge === '🚨 EXPIRED' || status.badge === '⚠️ EXPIRES TODAY';
+    return status.badge === '🚨 Expired' || status.badge === '⚠️ EXPIRES TODAY';
   }).length;
 
   const expiringSoonCount = pantryItems.filter(item => {
@@ -932,19 +932,38 @@ function App() {
   
   // --- RUNTIME FILTER ENGINE ---
   const filteredPantryItems = pantryItems.filter(item => {
-    // 1. Apply Fuzzy Search Filter
+    // 1. Apply Fuzzy Search Filter (Unchanged)
     const matchesSearch = item.name.toLowerCase().includes(pantrySearch.toLowerCase());
 
-    // 2. Apply Expiration Type Filter
-    const status = getExpiryStatus(item.expiration_date);
+    // 2. Apply Expiration Type Filter (FIXED: Uses robust timestamp math instead of localized text labels)
     let matchesExpiry = true;
-    if (pantryFilter === 'expired') {
-      matchesExpiry = (status.badge === t.expired || status.badge === t.expiresToday);
-    } else if (pantryFilter === 'soon') {
-      matchesExpiry = (status.badge && status.badge.includes('⏳'));
+    
+    if (pantryFilter !== 'all') {
+      if (!item.expiration_date) {
+        // Items without expiration dates can't be 'expired' or 'soon'
+        matchesExpiry = false; 
+      } else {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize to midnight
+        
+        const expiryDate = new Date(item.expiration_date);
+        expiryDate.setHours(0, 0, 0, 0);
+
+        // Calculate exact days left
+        const timeDiff = expiryDate.getTime() - today.getTime();
+        const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+        if (pantryFilter === 'expired') {
+          // It is expired if daysLeft is less than 0, or expires today (daysLeft === 0)
+          matchesExpiry = daysLeft <= 0; 
+        } else if (pantryFilter === 'soon') {
+          // Matches your urgent item rule (e.g., expiring within the next 3 days, but not already expired)
+          matchesExpiry = daysLeft > 0 && daysLeft <= 3; 
+        }
+      }
     }
 
-    // 3. NEW: Apply Category Group Filter (Checks main container names or subcategories)
+    // 3. Apply Category Group Filter (Unchanged)
     const itemCat = item.category || '🥫 Center Store (Pantry Staples)';
     let matchesCategory = true;
     if (categoryFilter !== 'all') {
@@ -952,7 +971,7 @@ function App() {
     }
 
     return matchesSearch && matchesExpiry && matchesCategory;
-  });
+});
   
   
   
